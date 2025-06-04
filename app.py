@@ -43,7 +43,12 @@ class ScriptProcess:
         
     def start(self):
         try:
-            with open(self.log_file, 'w') as log:
+            with open(self.log_file, 'w', encoding='utf-8') as log:
+                # Настройка окружения для поддержки UTF-8
+                env = os.environ.copy()
+                env['PYTHONIOENCODING'] = 'utf-8'
+                env['PYTHONLEGACYWINDOWSSTDIO'] = '0'
+                
                 self.process = subprocess.Popen(
                     self.command,
                     shell=True,
@@ -52,7 +57,10 @@ class ScriptProcess:
                     text=True,
                     cwd=self.cwd,
                     bufsize=1,
-                    universal_newlines=True
+                    universal_newlines=True,
+                    encoding='utf-8',
+                    errors='replace',
+                    env=env
                 )
                 self.status = 'running'
                 
@@ -62,22 +70,29 @@ class ScriptProcess:
         except Exception as e:
             self.status = 'error'
             self.end_time = datetime.now()
-            with open(self.log_file, 'w') as log:
+            with open(self.log_file, 'w', encoding='utf-8') as log:
                 log.write(f"Error starting process: {str(e)}")
     
     def _monitor_output(self):
         try:
-            with open(self.log_file, 'a') as log:
+            with open(self.log_file, 'a', encoding='utf-8') as log:
                 for line in iter(self.process.stdout.readline, ''):
                     if line:
-                        log.write(line)
-                        log.flush()
-                        self.output_lines.append(line.strip())
-                        # Отправка в реальном времени через WebSocket
-                        socketio.emit('script_output', {
-                            'script_id': self.id,
-                            'line': line.strip()
-                        })
+                        try:
+                            log.write(line)
+                            log.flush()
+                            self.output_lines.append(line.strip())
+                            # Отправка в реальном времени через WebSocket
+                            socketio.emit('script_output', {
+                                'script_id': self.id,
+                                'line': line.strip()
+                            })
+                        except UnicodeDecodeError:
+                            # Обработка ошибок кодировки
+                            safe_line = line.encode('utf-8', errors='replace').decode('utf-8')
+                            log.write(safe_line)
+                            log.flush()
+                            self.output_lines.append(safe_line.strip())
                 
                 self.process.wait()
                 self.status = 'completed' if self.process.returncode == 0 else 'failed'
@@ -116,7 +131,7 @@ class ScriptProcess:
     
     def get_logs(self):
         try:
-            with open(self.log_file, 'r') as log:
+            with open(self.log_file, 'r', encoding='utf-8') as log:
                 return log.read()
         except:
             return "No logs available"
@@ -178,7 +193,7 @@ def get_files():
         if os.path.isfile(filepath):
             files.append({
                 'name': filename,
-                'path': filepath,
+                'path': filepath.replace('\\', '/'),  # Нормализуем путь для веб
                 'type': 'file',
                 'size': os.path.getsize(filepath)
             })
@@ -189,7 +204,7 @@ def get_files():
         if os.path.isdir(dirpath):
             files.append({
                 'name': dirname,
-                'path': dirpath,
+                'path': dirpath.replace('\\', '/'),  # Нормализуем путь для веб
                 'type': 'directory'
             })
     
@@ -206,7 +221,7 @@ def get_project_files(project_name):
         item_path = os.path.join(project_path, item)
         files.append({
             'name': item,
-            'path': item_path,
+            'path': item_path.replace('\\', '/'),  # Нормализуем путь для веб
             'type': 'directory' if os.path.isdir(item_path) else 'file',
             'size': os.path.getsize(item_path) if os.path.isfile(item_path) else 0
         })
@@ -222,6 +237,11 @@ def execute_script():
     
     if not command:
         return jsonify({'error': 'No command provided'}), 400
+    
+    # Нормализуем пути в команде для Windows
+    command = command.replace('\\', '/')
+    if cwd:
+        cwd = cwd.replace('\\', '/')
     
     script_id = str(uuid.uuid4())
     script_process = ScriptProcess(script_id, name, command, cwd)
@@ -246,12 +266,20 @@ def execute_command():
         return jsonify({'error': 'No command provided'}), 400
     
     try:
+        # Настройка окружения для поддержки UTF-8
+        env = os.environ.copy()
+        env['PYTHONIOENCODING'] = 'utf-8'
+        env['PYTHONLEGACYWINDOWSSTDIO'] = '0'
+        
         result = subprocess.run(
             command,
             shell=True,
             capture_output=True,
             text=True,
-            timeout=30
+            timeout=30,
+            encoding='utf-8',
+            errors='replace',
+            env=env
         )
         
         return jsonify({
@@ -331,6 +359,36 @@ def get_logs(script_id):
     
     return jsonify({'error': 'Script not found'}), 404
 
+@app.route('/delete-file', methods=['DELETE'])
+def delete_file():
+    data = request.json
+    file_path = data.get('path')
+    
+    if not file_path:
+        return jsonify({'error': 'No file path provided'}), 400
+    
+    try:
+        # Проверяем что файл находится в разрешенных папках
+        abs_path = os.path.abspath(file_path)
+        upload_path = os.path.abspath(app.config['UPLOAD_FOLDER'])
+        projects_path = os.path.abspath(app.config['PROJECTS_FOLDER'])
+        
+        if not (abs_path.startswith(upload_path) or abs_path.startswith(projects_path)):
+            return jsonify({'error': 'Access denied'}), 403
+        
+        if os.path.isfile(abs_path):
+            os.remove(abs_path)
+            return jsonify({'success': True, 'message': 'File deleted successfully'})
+        elif os.path.isdir(abs_path):
+            import shutil
+            shutil.rmtree(abs_path)
+            return jsonify({'success': True, 'message': 'Directory deleted successfully'})
+        else:
+            return jsonify({'error': 'File not found'}), 404
+            
+    except Exception as e:
+        return jsonify({'error': f'Failed to delete file: {str(e)}'}), 500
+
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
@@ -340,4 +398,9 @@ def handle_disconnect():
     print('Client disconnected')
 
 if __name__ == '__main__':
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    # Отключаем подробные логи для уменьшения шума в консоли
+    import logging
+    log = logging.getLogger('werkzeug')
+    log.setLevel(logging.ERROR)
+    
+    socketio.run(app, host='0.0.0.0', port=5000, debug=False)

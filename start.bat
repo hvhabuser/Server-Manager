@@ -1,4 +1,7 @@
 @echo off
+:: Настройка UTF-8 кодировки для корректного отображения
+chcp 65001 >nul
+
 echo ========================================
 echo   WebPanel Script Manager
 echo   Starting setup and installation...
@@ -47,6 +50,10 @@ echo   Open your browser and go to:
 echo   http://localhost:5000
 echo ========================================
 echo.
+
+:: Установка переменных окружения для Python UTF-8
+set PYTHONIOENCODING=utf-8
+set PYTHONLEGACYWINDOWSSTDIO=0
 
 :: Запускаем сервер
 python app.py

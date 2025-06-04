@@ -270,6 +270,21 @@ header p {
     border-color: #ff9f00;
 }
 
+.btn-delete {
+    background: rgba(255, 49, 38, 0.08);
+    border: 1px solid rgba(255, 49, 38, 0.2);
+    color: #ff6b7a;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+}
+
+.btn-delete:hover {
+    background: rgba(255, 49, 38, 0.15);
+    border-color: rgba(255, 49, 38, 0.4);
+    color: #ff3126;
+    transform: translateY(-1px);
+}
+
 /* Process list */
 .process-item {
     background: rgba(22, 27, 34, 0.5);
@@ -342,6 +357,52 @@ header p {
 }
 
 /* Terminal */
+.terminal-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: rgba(1, 4, 9, 0.3);
+    border: 1px solid rgba(0, 255, 135, 0.1);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+}
+
+.btn-clear {
+    background: rgba(255, 159, 0, 0.1);
+    border: 1px solid rgba(255, 159, 0, 0.3);
+    color: #ff9f00;
+}
+
+.btn-clear:hover {
+    background: rgba(255, 159, 0, 0.2);
+    border-color: #ff9f00;
+}
+
+.btn-new {
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid rgba(0, 123, 255, 0.3);
+    color: #007bff;
+}
+
+.btn-new:hover {
+    background: rgba(0, 123, 255, 0.2);
+    border-color: #007bff;
+}
+
+.btn-execute {
+    background: rgba(0, 255, 135, 0.1);
+    border: 1px solid rgba(0, 255, 135, 0.3);
+    color: #00ff87;
+    padding: 8px 16px;
+    margin-left: 8px;
+}
+
+.btn-execute:hover {
+    background: rgba(0, 255, 135, 0.2);
+    border-color: #00ff87;
+}
+
 .terminal-container {
     background: #010409;
     border: 1px solid rgba(0, 255, 135, 0.2);
@@ -537,6 +598,28 @@ header p {
     .modal-content {
         width: 95%;
         margin: 10% auto;
+    }
+    
+    .terminal-controls {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .terminal-controls .btn {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .terminal-input-container {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .btn-execute {
+        margin-left: 0;
+        width: 100%;
     }
 }
 

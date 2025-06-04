@@ -71,8 +71,22 @@
         <div class="tab-content" id="terminal">
             <div class="glass-panel">
                 <h2><i class="fas fa-terminal"></i> Terminal</h2>
+                <div class="terminal-controls">
+                    <button class="btn btn-clear" onclick="clearTerminal()">
+                        <i class="fas fa-trash-alt"></i> Clear
+                    </button>
+                    <button class="btn btn-new" onclick="newTerminalSession()">
+                        <i class="fas fa-plus"></i> New Session
+                    </button>
+                    <button class="btn btn-refresh" onclick="loadTerminalHistory()">
+                        <i class="fas fa-history"></i> History
+                    </button>
+                </div>
                 <div class="terminal-container">
-                    <div class="terminal-output" id="terminalOutput"></div>
+                    <div class="terminal-output" id="terminalOutput">Welcome to WebPanel Terminal!
+Type 'help' for available commands.
+
+</div>
                     <div class="terminal-input-container">
                         <span class="terminal-prompt">$</span>
                         <input type="text" class="terminal-input" id="terminalInput" placeholder="Enter command...">
@@ -114,5 +128,6 @@
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/debug.js') }}"></script>
 </body>
 </html> 
