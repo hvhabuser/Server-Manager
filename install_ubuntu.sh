@@ -82,13 +82,24 @@ $USE_SUDO apt install -y \
     python3-pip \
     python3-venv \
     python3-dev \
-    unrar \
     git \
     curl \
     wget \
     htop \
     nano \
     tree
+
+# Установка поддержки RAR архивов (пробуем разные варианты)
+print_step "Установка поддержки RAR архивов..."
+if $USE_SUDO apt install -y unrar 2>/dev/null; then
+    print_success "Установлен unrar"
+elif $USE_SUDO apt install -y unrar-free 2>/dev/null; then
+    print_success "Установлен unrar-free"
+elif $USE_SUDO apt install -y p7zip-full 2>/dev/null; then
+    print_success "Установлен p7zip-full (альтернатива для RAR)"
+else
+    print_info "⚠️  RAR поддержка не установлена, но ZIP архивы будут работать"
+fi
 
 # =====================================
 # 📁 СОЗДАНИЕ СТРУКТУРЫ ПРОЕКТА
@@ -120,7 +131,7 @@ eventlet==0.33.3
 python-engineio==4.12.1
 simple-websocket==1.1.0
 werkzeug==3.1.3
-click==8.2.1
+click==8.1.7
 blinker==1.9.0
 itsdangerous==2.2.0
 jinja2==3.1.6
@@ -1461,5 +1472,4 @@ else
     print_info "Для запуска используйте команды выше"
 fi
 
-print_success "🎉 WebPanel готов к работе!"
-EOF 
+print_success "🎉 WebPanel готов к работе!" 
