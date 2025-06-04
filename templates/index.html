@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebPanel - Script Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="glass-panel">
+            <h1><i class="fas fa-terminal"></i> WebPanel</h1>
+            <p>Advanced Script & File Management System</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="upload"><i class="fas fa-upload"></i> Upload</button>
+            <button class="tab-btn" data-tab="files"><i class="fas fa-folder"></i> Files</button>
+            <button class="tab-btn" data-tab="processes"><i class="fas fa-cogs"></i> Processes</button>
+            <button class="tab-btn" data-tab="terminal"><i class="fas fa-terminal"></i> Terminal</button>
+        </nav>
+
+        <!-- Upload Tab -->
+        <div class="tab-content active" id="upload">
+            <div class="glass-panel">
+                <h2><i class="fas fa-cloud-upload-alt"></i> Upload Files & Scripts</h2>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                    <p>Drag & Drop files here or click to browse</p>
+                    <p class="upload-info">Supports: .py, .js, .sh, .bat, .zip, .rar</p>
+                    <input type="file" id="fileInput" multiple accept=".py,.js,.sh,.bat,.zip,.rar">
+                </div>
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <span class="progress-text">Uploading...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Files Tab -->
+        <div class="tab-content" id="files">
+            <div class="glass-panel">
+                <h2><i class="fas fa-folder-open"></i> File Manager</h2>
+                <div class="file-grid" id="fileGrid">
+                    <!-- Files will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Processes Tab -->
+        <div class="tab-content" id="processes">
+            <div class="glass-panel">
+                <h2><i class="fas fa-tasks"></i> Process Manager</h2>
+                <div class="process-controls">
+                    <button class="btn btn-refresh" onclick="loadProcesses()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="process-list" id="processList">
+                    <!-- Processes will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Terminal Tab -->
+        <div class="tab-content" id="terminal">
+            <div class="glass-panel">
+                <h2><i class="fas fa-terminal"></i> Terminal</h2>
+                <div class="terminal-container">
+                    <div class="terminal-output" id="terminalOutput"></div>
+                    <div class="terminal-input-container">
+                        <span class="terminal-prompt">$</span>
+                        <input type="text" class="terminal-input" id="terminalInput" placeholder="Enter command...">
+                        <button class="btn btn-execute" onclick="executeCommand()">
+                            <i class="fas fa-play"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for logs -->
+    <div class="modal" id="logModal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-alt"></i> Script Logs</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <pre id="logContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for project files -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3><i class="fas fa-folder"></i> Project Files</h3>
+                <button class="modal-close" onclick="closeProjectModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="project-files" id="projectFiles"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html> 
